@@ -1,0 +1,129 @@
+.flex {
+  display: flex;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-right button.Polaris-Button:first-child {
+  margin-right: 1rem;
+
+}
+
+.text-right button.Polaris-Button:last-child {
+  margin: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.help_card_wrapper {
+  padding: 1rem;
+}
+
+.help_card_wrapper a {
+  text-decoration: underline;
+  color: var(--p-interactive);
+}
+
+.mt-5 {
+  margin-top: 0.5rem;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary {
+  width: 100%;
+  padding: 0.8rem 0;
+  position: relative;
+  cursor: pointer;
+  list-style: none;
+}
+
+details summary span {
+  font-weight: 500;
+}
+
+details[open] summary svg {
+  transform: rotate(180deg);
+}
+
+details p {
+  margin-left: 1rem;
+}
+
+details ul {
+  padding-inline-start: 1rem;
+}
+
+ul li {
+  list-style: none;
+}
+
+ul.more_help li {
+  list-style-type: circle;
+}
+
+ul.step_lh_3 {
+  line-height: 1.7rem;
+  padding-right: 4rem;
+  font-weight: 500;
+}
+
+details summary {
+  cursor: pointer;
+  transition: margin 150ms ease-out;
+}
+
+details[open] summary {
+  margin-bottom: 10px;
+}
+ 
+.Polaris-Card {
+  height: 100%;
+}
+
+.card_two .Polaris-Card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Polaris-Card img {
+  object-fit: contain;
+  max-width: 100%;
+  height: auto;
+}
+
+details ul.steps_container.more_help {
+  padding-inline-start: 2rem;
+}
+
+h2.Polaris-Heading {
+  font-weight: 700;
+}
+
+span svg.Polaris-Icon__Svg_375hu {
+  height: 12px;
+  fill: #616a75;
+  margin: 0 0.3rem;
+}
+
+.desktop-image img {
+  object-fit: cover;
+
+}
+
+img {
+  width: 100%;
+}
+
+@media screen and (min-width: 1080px) {
+  .desktop-image img {
+    object-fit: none;
+  }
+}

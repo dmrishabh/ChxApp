@@ -1,277 +1,134 @@
-import { useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { json } from "@remix-run/node";
-import {
-  useActionData,
-  useLoaderData,
-  useNavigation,
-  useSubmit,
-} from "@remix-run/react";
-import {
-  Page,
-  Layout,
-  Text,
-  VerticalStack,
-  Card,
-  Button,
-  HorizontalStack,
-  Box,
-  Divider,
-  List,
-  Link,
-} from "@shopify/polaris";
-
+import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
+import { Tabs, LegacyCard, Card, Layout, Page } from "@shopify/polaris";
+import IntroCard from "../shared/components/IntroCard";
+import SupportFooter from "../shared/components/SupportFooter";
+import {
+  CouponBlockVideo,
+  PaymentReorderBlockVideo,
+  BannerBlockVideo,
+  FreebieDiscount,
+  PrepaidDiscount,
+  DiscountBlocker,
+} from "../shared/assets";
+import "../shared/styles/CustomStyles.css";
 
-export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
-
-  return json({ shop: session.shop.replace(".myshopify.com", "") });
-};
-
-export async function action({ request }) {
-  const { admin } = await authenticate.admin(request);
-
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($input: ProductInput!) {
-        productCreate(input: $input) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        input: {
-          title: `${color} Snowboard`,
-          variants: [{ price: Math.random() * 100 }],
-        },
-      },
-    }
-  );
-
-  const responseJson = await response.json();
-
-  return json({
-    product: responseJson.data.productCreate.product,
-  });
-}
+const FUNCTION_ID_PREPAID_DISCOUNT = "1864d648-b879-4e3a-9116-0c4d1a8f0203";
+const FUNCTION_ID_FREEBIE_DISCOUNT = "64f8d556-703b-42bb-9759-9f2b29f29580";
+const prePaidDiscountPath =
+  "/prepaid-discount/" + FUNCTION_ID_PREPAID_DISCOUNT + "/new";
+const freebieDiscountPath =
+  "/freebie-product/" + FUNCTION_ID_FREEBIE_DISCOUNT + "/new";
 
 export default function Index() {
-  const nav = useNavigation();
-  const { shop } = useLoaderData();
-  const actionData = useActionData();
-  const submit = useSubmit();
+  const [selectedTab, setSelectedTab] = useState(0);
 
-  const isLoading =
-    ["loading", "submitting"].includes(nav.state) && nav.formMethod === "POST";
-
-  const productId = actionData?.product?.id.replace(
-    "gid://shopify/Product/",
-    ""
+  const handleTabChange = useCallback(
+    (selectedTabIndex) => setSelectedTab(selectedTabIndex),
+    [],
   );
-
-  useEffect(() => {
-    if (productId) {
-      shopify.toast.show("Product created");
-    }
-  }, [productId]);
-
-  const generateProduct = () => submit({}, { replace: true, method: "POST" });
-
+  const tabs = [
+    {
+      id: 'all-customers-1',
+      content: 'All',
+      accessibilityLabel: 'All customers',
+      panelID: 'all-customers-content-1',
+    },
+    {
+      id: 'accepts-marketing-1',
+      content: 'Sales',
+      panelID: 'accepts-marketing-content-1',
+    },
+    {
+      id: 'accepts-marketing-1',
+      content: 'Content',
+      panelID: 'accepts-marketing-content-2',
+    },
+    {
+      id: 'repeat-customers-1',
+      content: 'Form fields',
+      panelID: 'repeat-customers-content-1',
+    },
+    {
+      id: 'prospects-1',
+      content: 'Utility',
+      panelID: 'prospects-content-1',
+    },
+    {
+      id: 'prospects-1',
+      content: 'Functions',
+      panelID: 'prospects-content-2',
+    },
+  ];
   return (
     <Page>
-      <ui-title-bar title="Remix app template">
-        <button variant="primary" onClick={generateProduct}>
-          Generate a product
-        </button>
-      </ui-title-bar>
-      <VerticalStack gap="5">
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <VerticalStack gap="5">
-                <VerticalStack gap="2">
-                  <Text as="h2" variant="headingMd">
-                    Congrats on creating a new Shopify app 🎉
-                  </Text>
-                  <Text variant="bodyMd" as="p">
-                    This embedded app template uses{" "}
-                    <Link
-                      url="https://shopify.dev/docs/apps/tools/app-bridge"
-                      target="_blank"
-                    >
-                      App Bridge
-                    </Link>{" "}
-                    interface examples like an{" "}
-                    <Link url="/app/additional">
-                      additional page in the app nav
-                    </Link>
-                    , as well as an{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql"
-                      target="_blank"
-                    >
-                      Admin GraphQL
-                    </Link>{" "}
-                    mutation demo, to provide a starting point for app
-                    development.
-                  </Text>
-                </VerticalStack>
-                <VerticalStack gap="2">
-                  <Text as="h3" variant="headingMd">
-                    Get started with products
-                  </Text>
-                  <Text as="p" variant="bodyMd">
-                    Generate a product with GraphQL and get the JSON output for
-                    that product. Learn more about the{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-                      target="_blank"
-                    >
-                      productCreate
-                    </Link>{" "}
-                    mutation in our API references.
-                  </Text>
-                </VerticalStack>
-                <HorizontalStack gap="3" align="end">
-                  {actionData?.product && (
-                    <Button
-                      url={`https://admin.shopify.com/store/${shop}/admin/products/${productId}`}
-                      target="_blank"
-                    >
-                      View product
-                    </Button>
-                  )}
-                  <Button loading={isLoading} primary onClick={generateProduct}>
-                    Generate a product
-                  </Button>
-                </HorizontalStack>
-                {actionData?.product && (
-                  <Box
-                    padding="4"
-                    background="bg-subdued"
-                    borderColor="border"
-                    borderWidth="1"
-                    borderRadius="2"
-                    overflowX="scroll"
-                  >
-                    <pre style={{ margin: 0 }}>
-                      <code>{JSON.stringify(actionData.product, null, 2)}</code>
-                    </pre>
-                  </Box>
-                )}
-              </VerticalStack>
-            </Card>
-          </Layout.Section>
-          <Layout.Section secondary>
-            <VerticalStack gap="5">
-              <Card>
-                <VerticalStack gap="2">
-                  <Text as="h2" variant="headingMd">
-                    App template specs
-                  </Text>
-                  <VerticalStack gap="2">
-                    <Divider />
-                    <HorizontalStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Framework
-                      </Text>
-                      <Link url="https://remix.run" target="_blank">
-                        Remix
-                      </Link>
-                    </HorizontalStack>
-                    <Divider />
-                    <HorizontalStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Database
-                      </Text>
-                      <Link url="https://www.prisma.io/" target="_blank">
-                        Prisma
-                      </Link>
-                    </HorizontalStack>
-                    <Divider />
-                    <HorizontalStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Interface
-                      </Text>
-                      <span>
-                        <Link url="https://polaris.shopify.com" target="_blank">
-                          Polaris
-                        </Link>
-                        {", "}
-                        <Link
-                          url="https://shopify.dev/docs/apps/tools/app-bridge"
-                          target="_blank"
-                        >
-                          App Bridge
-                        </Link>
-                      </span>
-                    </HorizontalStack>
-                    <Divider />
-                    <HorizontalStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        API
-                      </Text>
-                      <Link
-                        url="https://shopify.dev/docs/api/admin-graphql"
-                        target="_blank"
-                      >
-                        GraphQL API
-                      </Link>
-                    </HorizontalStack>
-                  </VerticalStack>
-                </VerticalStack>
-              </Card>
-              <Card>
-                <VerticalStack gap="2">
-                  <Text as="h2" variant="headingMd">
-                    Next steps
-                  </Text>
-                  <List spacing="extraTight">
-                    <List.Item>
-                      Build an{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/getting-started/build-app-example"
-                        target="_blank"
-                      >
-                        {" "}
-                        example app
-                      </Link>{" "}
-                      to get started
-                    </List.Item>
-                    <List.Item>
-                      Explore Shopify’s API with{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-                        target="_blank"
-                      >
-                        GraphiQL
-                      </Link>
-                    </List.Item>
-                  </List>
-                </VerticalStack>
-              </Card>
-            </VerticalStack>
-          </Layout.Section>
-        </Layout>
-      </VerticalStack>
+      <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
+        <LegacyCard.Section title={tabs[selectedTab].content}>
+          <p>Tab {selectedTab} selected</p>
+        </LegacyCard.Section>
+      </Tabs>
+      <Layout>
+        <Layout.Section oneThird>
+          <IntroCard
+            title="Single Click Discounts"
+            description="Show discount coupons from the Shopify coupons list to be directly applied on the checkout page."
+            videoSource={CouponBlockVideo}
+            buttonText="Configure coupon"
+            path="/app/couponcode"
+          />
+        </Layout.Section>
+
+        <Layout.Section oneThird>
+          <IntroCard
+            title="Checkout Banners"
+            description="Apply multiple promotional banners across different checkout stages to enhance customer experience."
+            videoSource={BannerBlockVideo}
+            buttonText="Know more"
+            path="/app/checkoutbanner"
+          />
+        </Layout.Section>
+        {/* 
+        <Layout.Section oneThird>
+          <IntroCard
+            title="Payment Gateway Reorder"
+            description="Provides flexibility by enabling merchants to rearrange the sequence of payment gateways"
+            buttonText="Rearrange now"
+            videoSource={PaymentReorderBlockVideo}
+            path="/payment-reorder"
+          />
+        </Layout.Section>
+
+        <Layout.Section oneThird>
+          <IntroCard
+            title="Product discount blocker"
+            description="Remove discounts from the cart if non-discountable products are present. Works only on discount coupons."
+            buttonText="Know more"
+            imageSource={DiscountBlocker}
+            path="/productDiscountBlocker"
+          />
+        </Layout.Section>
+        <Layout.Section oneThird>
+          <IntroCard
+            title="Prepaid discount"
+            description="Treat your customers with exclusive discounts as a reward for every online payment purchase."
+            buttonText="Configure discount"
+            imageSource={PrepaidDiscount}
+            path={prePaidDiscountPath}
+          />
+        </Layout.Section>
+        <Layout.Section oneThird>
+          <IntroCard
+            title="Add a free gift to a product."
+            description="Elevate your shopping experience with the ability to effortlessly add a complimentary gift to your purchase."
+            buttonText="Create freebie"
+            imageSource={FreebieDiscount}
+            path={freebieDiscountPath}
+          />
+        </Layout.Section> */}
+      </Layout>
+      <SupportFooter />
     </Page>
   );
 }

@@ -1,9 +1,10 @@
+// @ts-ignore
 import React, { useState, useEffect } from 'react';
 import {
-
   View,
   Image,
   reactExtension,
+  BlockStack,
   InlineLayout,
   useTotalAmount,
   useSettings,
@@ -26,6 +27,7 @@ function Extension() {
   const { amount, currencyCode } = useTotalAmount();
   console.log(currentProgress, amount, target_amount);
   // Calculate the percentage completion
+  // @ts-ignore
   const percentageCompletion = (amount / parseInt(target_amount)) * 100;
 
   // Update the currentProgress state when the amount or target_amount changes
@@ -48,20 +50,25 @@ function Extension() {
   }, [amount, target_amount]);
   console.log("************", currentProgress);
 
+  // @ts-ignore
   const amountNeeded = Math.ceil(parseInt(target_amount) - amount);
   return (
     <>
-      <InlineLayout blockAlignment="center" columns={[currentProgress, gapBar]} minBlockSize="100%">
+    <BlockStack>
+      <InlineLayout blockAlignment="center" columns={[
+        // @ts-ignore
+        currentProgress, gapBar]} minBlockSize="100%">
         <View display="block" padding={["base", "none", "base", "none"]} border="none">
           <Image cornerRadius="base" source="https://cdn.shopify.com/s/files/1/0821/7886/7497/files/green-progress-bar.png?v=1694263966" />
         </View>
         <View display="block" padding={["base", "base", "base", "none"]} border="none">
           <Image cornerRadius={["none", "base", "base", "none"]} fit="cover" source="https://cdn.shopify.com/s/files/1/0821/7886/7497/files/Frame_1_1.png?v=1694264278" />
-        </View>
+        </View> 
         <View>
           {currentProgress}
         </View>
       </InlineLayout>
+      </BlockStack>
       {showSuccessBanner && (
         <Banner
           status="success"
